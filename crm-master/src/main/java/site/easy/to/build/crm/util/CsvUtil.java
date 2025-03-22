@@ -15,11 +15,15 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class CsvUtil {
 
     private static String DATE_PATTERN = "yyyy-MM-dd"; // Format de date par défaut
+    private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     public static void setDatePattern(String pattern) {
         DATE_PATTERN = pattern;
@@ -72,8 +76,8 @@ public class CsvUtil {
         return null;
     }
 
-    private static Object convertValue(String value, Class<?> fieldType) {
-        if (value==null) return null;
+    public static Object convertValue(String value, Class<?> fieldType) {
+        if (value == null) return null;
         try {
             if (fieldType == int.class || fieldType == Integer.class) {
                 return Integer.parseInt(value);
@@ -89,11 +93,15 @@ public class CsvUtil {
                 return parseDate(value);
             } else if (fieldType == Timestamp.class) {
                 return Timestamp.valueOf(value);
+            } else if (fieldType == LocalDate.class) {
+                return LocalDate.parse(value, DateTimeFormatter.ofPattern(DATE_PATTERN));
+            } else if (fieldType == LocalDateTime.class) {
+                return LocalDateTime.parse(value, DateTimeFormatter.ofPattern(DATE_TIME_PATTERN));
             } else {
                 return null;
             }
         } catch (Exception e) {
-            throw e;
+            throw new IllegalArgumentException("Erreur de conversion pour la valeur : " + value + " vers " + fieldType.getSimpleName(), e);
         }
     }
 

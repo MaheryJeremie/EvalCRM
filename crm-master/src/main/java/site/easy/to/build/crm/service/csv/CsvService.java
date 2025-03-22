@@ -14,6 +14,10 @@ import site.easy.to.build.crm.util.CsvUtil;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,7 +51,7 @@ public class CsvService {
             JoinColumn columnAnnotation=field.getAnnotation(JoinColumn.class);
             return columnAnnotation.name();
         }
-        return field.getName().toLowerCase();
+        else return field.getName();
     }
     public List<String> getEntityColumns(Class<?> entityClass) {
         List<String> columns = new ArrayList<>();
@@ -130,12 +134,16 @@ public class CsvService {
                 String columnNames = String.join(", ", nonNullColumns);
                 String placeholders = nonNullColumns.stream().map(col -> "?").collect(Collectors.joining(", "));
                 String sql = String.format("INSERT INTO %s (%s) VALUES (%s)", tempTableName, columnNames, placeholders);
-
+                System.out.println("SQL Query: " + sql);
                 jdbcTemplate.update(sql, ps -> {
                     int index = 1;
                     for (Object value : nonNullValues) {
-                        // Si l'objet est non-primitive, obtenir l'ID ou la valeur à insérer
-                        if (value != null && !value.getClass().isPrimitive()) {
+                        Class<?> valueClass = value.getClass();
+                        if (value != null && !valueClass.isPrimitive() && !valueClass.equals(String.class) &&
+                                !Date.class.isAssignableFrom(valueClass) &&
+                                !Timestamp.class.isAssignableFrom(valueClass) &&
+                                !LocalDate.class.isAssignableFrom(valueClass) &&
+                                !LocalDateTime.class.isAssignableFrom(valueClass)) {
                             try {
                                 value = getIdFromEntity(value);
                             } catch (Exception ex) {
