@@ -516,6 +516,12 @@ CREATE TABLE IF NOT EXISTS `depenses` (
     CONSTRAINT `fk_depense_ticket` FOREIGN KEY (`ticket_id`) REFERENCES `trigger_ticket` (`ticket_id`) ON DELETE SET NULL,
     CONSTRAINT `fk_depense_lead` FOREIGN KEY (`lead_id`) REFERENCES `trigger_lead` (`lead_id`) ON DELETE SET NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS `seuil_limite` (
+                                              `id` INT AUTO_INCREMENT PRIMARY KEY,
+                                              `pourcentage` DECIMAL(10,2) NOT NULL CHECK (`pourcentage` BETWEEN 0 AND 100),
+    `date_modif` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

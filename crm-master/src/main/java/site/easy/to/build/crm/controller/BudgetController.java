@@ -49,6 +49,13 @@ public class BudgetController {
         model.addAttribute("valuer",valeur);
         return "budget/myBudget";
     }
+    @GetMapping("/customerBudgetTotal")
+    public String getTotalBudget(Authentication authentication,Model model){
+        int userId = authenticationUtils.getLoggedInUserId(authentication);
+        double valeur = budgetService.getTotalBudgetByCustomerId(userId);
+        model.addAttribute("valuer",valeur);
+        return "budget/myBudget";
+    }
     @GetMapping("/create")
     public String showCreateForm(Model model) {
         model.addAttribute("budget", new Budget());
