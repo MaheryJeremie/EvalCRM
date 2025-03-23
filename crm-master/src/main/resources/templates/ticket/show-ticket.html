@@ -100,6 +100,12 @@
                     </div>
                 </div>
             </div>
+            <div th:if="${depense == null}" class="col-md-12 row">
+                <a th:href="@{/depenses/create/ticket/{ticketId}(ticketId=${ticket.ticketId})}">Create Expense</a>
+            </div>
+            <div th:if="${depense != null}" class="col-md-12 row">
+                <p>Expense Value: <span th:text="${depense.montant}"></span></p>
+            </div>
             <!-- ============================================================== -->
             <!-- End Page Content -->
             <!-- ============================================================== -->
