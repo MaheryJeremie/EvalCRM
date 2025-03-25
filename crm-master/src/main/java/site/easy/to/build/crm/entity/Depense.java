@@ -25,6 +25,8 @@ public class Depense {
     @ManyToOne
     @JoinColumn(name = "lead_id")
     private Lead lead;
+    @Column(name="etat")
+    private int etat=1;
 
     // Getters et setters
     public int getId() {
@@ -65,5 +67,13 @@ public class Depense {
 
     public void setLead(Lead lead) {
         this.lead = lead;
+    }
+
+    public int getEtat() {
+        return etat;
+    }
+
+    public void setEtat(int etat) {
+        this.etat = etat;
     }
 }

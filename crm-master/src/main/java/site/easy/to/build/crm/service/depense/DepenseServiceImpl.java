@@ -40,16 +40,8 @@ public class DepenseServiceImpl implements DepenseService {
     }
 
     @Override
-    public Depense updateDepense(int id, Depense depenseDetails) {
-        Depense existingDepense = depenseRepository.findById(id).orElse(null);
-        if (existingDepense != null) {
-            existingDepense.setMontant(depenseDetails.getMontant());
-            existingDepense.setDateDepense(depenseDetails.getDateDepense());
-            existingDepense.setTicket(depenseDetails.getTicket());
-            existingDepense.setLead(depenseDetails.getLead());
-            return depenseRepository.save(existingDepense);
-        }
-        return null; // Retourne null si la dépense n'existe pas
+    public Depense updateDepense(Depense depenseDetails) {
+            return depenseRepository.save(depenseDetails);
     }
 
     @Override
@@ -74,5 +66,49 @@ public class DepenseServiceImpl implements DepenseService {
         double totalDepense=getTotalDepensesByCustomerId(customer_id).orElse(0.0);
         double pourcentageMontant=(pourcentage*sommeBudget)/100;
         return totalDepense>=pourcentageMontant;
+    }
+    public boolean depasseBudget(int customer_id,double montantSupp){
+        double sommeBudget=budgetService.getTotalBudgetByCustomerId(customer_id);
+        double totalDepense=getTotalDepensesByCustomerId(customer_id).orElse(0.0);
+        double newTotalDepense=totalDepense+montantSupp;
+        return  newTotalDepense>sommeBudget;
+    }
+
+    @Override
+    public double totalDepense() {
+        return depenseRepository.findTotalDepenses();
+    }
+
+    @Override
+    public List<Depense> listeDepenseLead() {
+        return depenseRepository.findListeDepensesLead();
+    }
+    @Override
+    public List<Depense> listeDepenseLeadValide() {
+        return depenseRepository.findListeDepensesLeadValide();
+    }
+
+    @Override
+    public List<Depense> listeDepenseTicket() {
+        return depenseRepository.findListeDepensesTicket();
+    }
+    @Override
+    public List<Depense> listeDepenseTicketValide() {
+        return depenseRepository.findListeDepensesTicketValide();
+    }
+
+    @Override
+    public Optional<Double> sommeDepenseLead() {
+        return depenseRepository.findSommeDepensesLead();
+    }
+
+    @Override
+    public Optional<Double> sommeDepenseTicket() {
+        return depenseRepository.findSommeDepensesTicket();
+    }
+
+    @Override
+    public List<Depense> findByCustomerByEtat(int id) {
+        return depenseRepository.findByEtatAndCustomerId(id);
     }
 }

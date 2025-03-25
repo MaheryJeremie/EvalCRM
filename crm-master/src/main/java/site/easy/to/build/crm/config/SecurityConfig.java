@@ -1,5 +1,6 @@
 package site.easy.to.build.crm.config;
 
+import org.springframework.web.filter.CorsFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -14,6 +15,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import site.easy.to.build.crm.config.oauth2.CustomOAuth2UserService;
 import site.easy.to.build.crm.config.oauth2.OAuthLoginSuccessHandler;
 import site.easy.to.build.crm.service.user.OAuthUserService;
@@ -55,6 +58,7 @@ public class SecurityConfig {
 
         http.csrf((csrf) -> csrf
                 .csrfTokenRepository(httpSessionCsrfTokenRepository)
+                .ignoringRequestMatchers("/api/**")
         );
 
         http.
@@ -69,6 +73,7 @@ public class SecurityConfig {
                         .requestMatchers("/save").permitAll()
                         .requestMatchers("/js/**").permitAll()
                         .requestMatchers("/css/**").permitAll()
+                        .requestMatchers("/api/**").permitAll()
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/**/manager/**")).hasRole("MANAGER")
                         .requestMatchers("/employee/**").hasAnyRole("MANAGER", "EMPLOYEE")
                         .requestMatchers("/customer/**").hasRole("CUSTOMER")
@@ -145,5 +150,18 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public CorsFilter corsFilter(){
+        CorsConfiguration configuration=new CorsConfiguration();
+        configuration.addAllowedOriginPattern("http://localhost:8000");
+        configuration.addAllowedMethod("GET");
+        configuration.addAllowedMethod("POST");
+        configuration.addAllowedMethod("PUT");
+        configuration.addAllowedMethod("*");
+        UrlBasedCorsConfigurationSource source=new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**",configuration);
+        return new CorsFilter(source);
     }
 }

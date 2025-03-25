@@ -1,5 +1,6 @@
 package site.easy.to.build.crm.service.seuil;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import site.easy.to.build.crm.entity.SeuilLimite;
@@ -14,8 +15,8 @@ public class SeuilLimiteServiceImpl implements SeuilLimiteService {
     private SeuilLimiteRepository seuilLimiteRepository;
 
     @Override
-    public List<SeuilLimite> getAll() {
-        return seuilLimiteRepository.findAll();
+    public List<SeuilLimite> getAllSorted() {
+        return seuilLimiteRepository.findAll(Sort.by(Sort.Direction.DESC, "dateModif"));
     }
 
     @Override

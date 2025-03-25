@@ -4,6 +4,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import site.easy.to.build.crm.entity.Customer;
+import site.easy.to.build.crm.entity.Depense;
+import site.easy.to.build.crm.repository.DepenseRepository;
 import site.easy.to.build.crm.repository.LeadRepository;
 import site.easy.to.build.crm.entity.Lead;
 
@@ -13,9 +15,11 @@ import java.util.List;
 public class LeadServiceImpl implements LeadService {
 
     private final LeadRepository leadRepository;
+    private final DepenseRepository depenseRepository;
 
-    public LeadServiceImpl(LeadRepository leadRepository) {
+    public LeadServiceImpl(LeadRepository leadRepository, DepenseRepository depenseRepository) {
         this.leadRepository = leadRepository;
+        this.depenseRepository = depenseRepository;
     }
 
     @Override
@@ -49,6 +53,8 @@ public class LeadServiceImpl implements LeadService {
 
     @Override
     public void delete(Lead lead) {
+        Depense depense=depenseRepository.findByLeadLeadId(lead.getLeadId());
+        depenseRepository.delete(depense);
         leadRepository.delete(lead);
     }
 

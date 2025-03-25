@@ -118,6 +118,17 @@
                         <li><a th:href="${home + 'employee/customer/create-customer'}">Create customer</a></li>
                     </ul>
                 </li>
+                <li class="nav-small-cap">--- Budget</li>
+                <li>
+                    <a class="has-arrow waves-effect waves-dark" href="javascript:void(0)">
+                        <i class="fas fa-file-contract"></i>
+                        <span class="hide-menu">Budgets</span>
+                    </a>
+                    <ul class="collapse">
+                        <li><a th:href="${home + 'budgets'}">All budgets</a></li>
+                    </ul>
+                </li>
+
                 <li class="nav-small-cap">--- Tickets</li>
                 <li>
                     <a class="has-arrow waves-effect waves-dark" href="javascript:void(0)">
@@ -237,6 +248,20 @@
                     <a class="waves-effect waves-dark" th:href="${home + 'budgets/create'}">
                         <i class="fas fa-file-contract"></i>
                         <span class="hide-menu">Create budget</span>
+                    </a>
+                </li>
+                <li class="nav-small-cap">--- Notifications</li>
+                <li>
+                    <a class="waves-dark" th:href="${home+'notification'}">
+                        <i class="fas fa-file-bell"></i>
+                        <span class="hide-menu">Mes notifications</span>
+                    </a>
+                </li>
+                <li class="nav-small-cap">--- Depenses en attente</li>
+                <li>
+                    <a class="waves-dark" th:href="${home+'depenses/attente'}">
+                        <i class="fas fa-file-contract"></i>
+                        <span class="hide-menu">Mes depenses en attente</span>
                     </a>
                 </li>
             </ul>

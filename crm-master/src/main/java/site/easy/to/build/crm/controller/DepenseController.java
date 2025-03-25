@@ -3,16 +3,15 @@ package site.easy.to.build.crm.controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.servlet.view.RedirectView;
-import site.easy.to.build.crm.entity.Depense;
-import site.easy.to.build.crm.entity.Lead;
-import site.easy.to.build.crm.entity.SeuilLimite;
-import site.easy.to.build.crm.entity.Ticket;
+import site.easy.to.build.crm.entity.*;
+import site.easy.to.build.crm.service.customer.CustomerService;
 import site.easy.to.build.crm.service.depense.DepenseService;
 import site.easy.to.build.crm.service.lead.LeadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import site.easy.to.build.crm.service.notification.NotificationService;
 import site.easy.to.build.crm.service.seuil.SeuilLimiteService;
 import site.easy.to.build.crm.service.ticket.TicketService;
 
@@ -28,13 +27,17 @@ public class DepenseController {
     private final LeadService leadService;
     private final TicketService ticketService;
     private final SeuilLimiteService seuilLimiteService;
+    private final CustomerService customerService;
+    private final NotificationService notificationService;
 
     @Autowired
-    public DepenseController(DepenseService depenseService, LeadService leadService,TicketService ticketService,SeuilLimiteService seuilLimiteService) {
+    public DepenseController(DepenseService depenseService, LeadService leadService, TicketService ticketService, SeuilLimiteService seuilLimiteService, CustomerService customerService, NotificationService notificationService) {
         this.depenseService = depenseService;
         this.leadService = leadService;
         this.ticketService = ticketService;
         this.seuilLimiteService = seuilLimiteService;
+        this.customerService = customerService;
+        this.notificationService = notificationService;
     }
 
     @PostMapping
@@ -46,54 +49,75 @@ public class DepenseController {
     ) {
         boolean isLead = false;
         boolean isAtteint = false;
-        String avertissement = "";
+        boolean depasseBudget = false;
+        String avertissement = null;
+        String redirectUrl = "someRedirectUrl";
+
         try {
             if (result.hasErrors()) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Invalid data provided for depense."));
             }
-            List<SeuilLimite> seuilLimites = seuilLimiteService.getAll();
+
+            List<SeuilLimite> seuilLimites = seuilLimiteService.getAllSorted();
             if (seuilLimites.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("message", "SeuilLimite not configured."));
             }
+
             double pourcentage = seuilLimites.get(0).getPourcentage();
+
+            // Traitement Lead ou Ticket
             if (leadId != null) {
                 Lead lead = leadService.findByLeadId(leadId);
-                if (lead == null) {
-                    return ResponseEntity.badRequest().body(Map.of("message", "Lead not found"));
-                }
-
                 depense.setLead(lead);
                 depense.setDateDepense(lead.getCreatedAt());
                 isLead = true;
-
-            }
-            else if (ticketId != null) {
+            } else if (ticketId != null) {
                 Ticket ticket = ticketService.findByTicketId(ticketId);
                 if (ticket == null) {
                     return ResponseEntity.badRequest().body(Map.of("message", "Ticket not found"));
                 }
-
                 depense.setTicket(ticket);
                 depense.setDateDepense(ticket.getCreatedAt());
-            }
-            else {
+            } else {
                 return ResponseEntity.badRequest().body(Map.of("message", "Neither Lead nor Ticket Id was provided"));
             }
-            depenseService.saveDepense(depense);
-            if (isLead) {
-                isAtteint = depenseService.checkSeuilAtteint(depense.getLead().getCustomer().getCustomerId(), pourcentage);
-            } else if (!isLead) {
-                isAtteint = depenseService.checkSeuilAtteint(depense.getTicket().getCustomer().getCustomerId(), pourcentage);
-            }
-            if (isAtteint) {
-                avertissement = pourcentage + "% of the budget has been used.";
-            }
-            String redirectUrl = isLead ? "/employee/lead/show/" + leadId : "/employee/ticket/show-ticket/" + ticketId;
 
+            int customerId = isLead ? depense.getLead().getCustomer().getCustomerId() : depense.getTicket().getCustomer().getCustomerId();
+
+            depasseBudget = depenseService.depasseBudget(customerId, depense.getMontant());
+
+            if (depasseBudget) {
+                avertissement = "La depense est en attente de confirmation";
+                depense.setEtat(0);
+                Notification notification = new Notification();
+                notification.setMessage("Il y a une nouvelle depense en attente de confirmation car elle dépasse le budget");
+                notification.setCustomer(customerService.findByCustomerId(customerId));
+                notification.setDateNotif(depense.getDateDepense());
+                notificationService.save(notification);
+
+            }
+            depenseService.saveDepense(depense);
+
+                if (!depasseBudget){
+                    isAtteint = depenseService.checkSeuilAtteint(customerId, pourcentage);
+                    if (isAtteint) {
+                        Notification notification = new Notification();
+                        notification.setMessage(pourcentage + "% of the budget has been used.");
+                        notification.setCustomer(customerService.findByCustomerId(customerId));
+                        notification.setDateNotif(depense.getDateDepense());
+                        notification.setDateNotif(depense.getDateDepense());
+                        notificationService.save(notification);
+                    }
+                }
+
+
+
+            redirectUrl = isLead ? "/employee/lead/show/" + leadId : "/employee/ticket/show-ticket/" + ticketId;
             return ResponseEntity.ok(Map.of(
                     "redirectUrl", redirectUrl,
-                    "avertissement", avertissement
+                    "avertissement", avertissement != null ? avertissement : ""
             ));
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(Map.of("message", "An error occurred: " + e.getMessage()));
@@ -101,10 +125,14 @@ public class DepenseController {
     }
 
 
+
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateDepense(@PathVariable int id, @RequestBody Depense depenseDetails) {
-        try {
-            Depense updatedDepense = depenseService.updateDepense(id, depenseDetails);
+    public ResponseEntity<?> updateDepense(@PathVariable int id,@RequestBody Map<String, Object> request) {
+        try{
+        double valeur = Double.parseDouble(request.get("montant").toString());
+        Depense depense= depenseService.getDepenseById(id);
+        depense.setMontant(valeur);
+            Depense updatedDepense = depenseService.updateDepense(depense);
             if (updatedDepense != null) {
                 return ResponseEntity.ok(updatedDepense);
             } else {
@@ -145,7 +173,7 @@ public class DepenseController {
             Depense depense = depenseService.getDepenseById(id);
             if (depense != null) {
                 depenseService.deleteDepense(id);
-                return ResponseEntity.noContent().build();
+                return ResponseEntity.ok().build();
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Depense not found with ID: " + id);
             }
@@ -179,6 +207,16 @@ public class DepenseController {
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while retrieving the depense: " + e.getMessage());
+        }
+    }
+    @GetMapping("/total")
+    public ResponseEntity<?> getTotal(){
+        try{
+            double total=depenseService.totalDepense();
+            return ResponseEntity.ok(total);
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 }

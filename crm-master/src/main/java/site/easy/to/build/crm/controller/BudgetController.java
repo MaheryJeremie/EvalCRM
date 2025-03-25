@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import site.easy.to.build.crm.entity.Budget;
 import site.easy.to.build.crm.entity.Customer;
 import site.easy.to.build.crm.service.budget.BudgetService;
@@ -29,6 +26,12 @@ public class BudgetController {
         this.budgetService = budgetService;
         this.authenticationUtils = authenticationUtils;
         this.customerService = customerService;
+    }
+    @GetMapping
+    public String getAll(Model model){
+        List<Budget> budgets=budgetService.getAllBudgets();
+        model.addAttribute("budgets",budgets);
+        return "budget/all-budget";
     }
 
 
