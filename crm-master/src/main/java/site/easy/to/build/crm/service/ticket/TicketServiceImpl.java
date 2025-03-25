@@ -4,6 +4,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import site.easy.to.build.crm.entity.Customer;
+import site.easy.to.build.crm.entity.Depense;
+import site.easy.to.build.crm.repository.DepenseRepository;
 import site.easy.to.build.crm.repository.TicketRepository;
 import site.easy.to.build.crm.entity.Ticket;
 
@@ -13,9 +15,11 @@ import java.util.List;
 public class TicketServiceImpl implements TicketService{
 
     private final TicketRepository ticketRepository;
+    private final DepenseRepository depenseRepository;
 
-    public TicketServiceImpl(TicketRepository ticketRepository) {
+    public TicketServiceImpl(TicketRepository ticketRepository, DepenseRepository depenseRepository) {
         this.ticketRepository = ticketRepository;
+        this.depenseRepository = depenseRepository;
     }
 
     @Override
@@ -30,6 +34,8 @@ public class TicketServiceImpl implements TicketService{
 
     @Override
     public void delete(Ticket ticket) {
+        Depense depense=depenseRepository.findByTicketTicketId(ticket.getTicketId());
+        depenseRepository.delete(depense);
         ticketRepository.delete(ticket);
     }
 

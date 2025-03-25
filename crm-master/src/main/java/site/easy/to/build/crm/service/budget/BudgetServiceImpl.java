@@ -47,4 +47,15 @@ public class BudgetServiceImpl implements BudgetService {
         Double total = budgetRepository.getTotalBudgetByCustomerId(customerId);
         return total != null ? total : 0.0;
     }
+
+    @Override
+    public double getTotal() {
+        Double total = budgetRepository.getTotalBudget();
+        return total != null ? total : 0.0;
+    }
+
+    @Override
+    public List<Object[]> getTotalByClient() {
+        return budgetRepository.findTotalBudgetByClient();
+    }
 }

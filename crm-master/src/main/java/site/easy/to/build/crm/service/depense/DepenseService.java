@@ -12,7 +12,7 @@ public interface DepenseService {
 
     Depense saveDepense(Depense depense);
 
-    Depense updateDepense(int id, Depense depenseDetails);
+    Depense updateDepense(Depense depenseDetails);
 
     void deleteDepense(int id);
 
@@ -21,4 +21,14 @@ public interface DepenseService {
     Depense getDepensesByLeadId(int leadId);
     public Optional<Double> getTotalDepensesByCustomerId(int customerId);
     public boolean checkSeuilAtteint(int customer_id,double pourcentage);
+    public boolean depasseBudget(int customer_id,double montantsupp);
+    public double totalDepense();
+    public Optional<Double> sommeDepenseTicket();
+    public Optional<Double> sommeDepenseLead();
+    public List<Depense> listeDepenseTicket();
+    public List<Depense> listeDepenseTicketValide();
+    public List<Depense>  listeDepenseLead();
+    public List<Depense>  listeDepenseLeadValide();
+    public List<Depense> findByCustomerByEtat(int id);
+
 }

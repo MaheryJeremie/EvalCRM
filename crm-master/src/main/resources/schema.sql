@@ -522,6 +522,25 @@ CREATE TABLE IF NOT EXISTS `seuil_limite` (
                                               `pourcentage` DECIMAL(10,2) NOT NULL CHECK (`pourcentage` BETWEEN 0 AND 100),
     `date_modif` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE IF NOT EXISTS `depenses` (
+                                          `depense_id` INT NOT NULL AUTO_INCREMENT,
+                                          `montant` DOUBLE NOT NULL,
+                                          `date_depense` TIMESTAMP NOT NULL,
+                                          `ticket_id` INT UNSIGNED DEFAULT NULL,
+                                          `lead_id` INT UNSIGNED DEFAULT NULL,
+                                          `etat`INT NOT NULL DEFAULT 1,
+                                          PRIMARY KEY (`depense_id`),
+    CONSTRAINT `fk_depense_ticket` FOREIGN KEY (`ticket_id`) REFERENCES `trigger_ticket` (`ticket_id`) ON DELETE SET NULL,
+    CONSTRAINT `fk_depense_lead` FOREIGN KEY (`lead_id`) REFERENCES `trigger_lead` (`lead_id`) ON DELETE SET NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE IF NOT EXISTS `notification` (
+                                              `id` INT AUTO_INCREMENT PRIMARY KEY,
+                                              `message` VARCHAR(255) NOT NULL,
+    `customer_id` INT UNSIGNED NOT NULL,
+    `date_notif` timestamp not null,
+    CONSTRAINT `notification_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `customer` (`customer_id`) ON DELETE CASCADE ON UPDATE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

@@ -16,4 +16,6 @@ public interface BudgetService {
     List<Budget> getBudgetsByCustomerId(int customerId);
 
     double getTotalBudgetByCustomerId(int customerId);
+    double getTotal();
+    List<Object[]> getTotalByClient();
 }

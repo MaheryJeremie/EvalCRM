@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.*;
 import site.easy.to.build.crm.entity.SeuilLimite;
 import site.easy.to.build.crm.service.seuil.SeuilLimiteService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/seuil")
 public class SeuilLimiteController {
@@ -16,10 +18,11 @@ public class SeuilLimiteController {
     }
 
 
+
     @GetMapping
     public ResponseEntity<SeuilLimite> getSeuil() {
         try{
-        SeuilLimite seuilLimite = seuilLimiteService.getAll().get(0);
+        SeuilLimite seuilLimite = seuilLimiteService.getAllSorted().get(0);
         return ResponseEntity.ok(seuilLimite);
         }
         catch (Exception e){
@@ -28,11 +31,11 @@ public class SeuilLimiteController {
     }
 
 
-    @PutMapping
-    public ResponseEntity<SeuilLimite> updateSeuil(@RequestBody SeuilLimite seuilLimite) {
+    @PutMapping("/{id}")
+    public ResponseEntity<SeuilLimite> updateSeuil(@RequestBody SeuilLimite seuilLimite2) {
         try{
-        SeuilLimite updatedSeuilLimite = seuilLimiteService.update(seuilLimite);
-        return ResponseEntity.ok(updatedSeuilLimite);
+            SeuilLimite updatedSeuilLimite = seuilLimiteService.update(seuilLimite2);
+            return ResponseEntity.ok(updatedSeuilLimite);
         }
         catch (Exception e){
             return ResponseEntity.internalServerError().build();
@@ -45,6 +48,15 @@ public class SeuilLimiteController {
             return ResponseEntity.ok(seuilLimite);
         }
         catch (Exception e){
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    @GetMapping("/all")
+    public ResponseEntity<List<SeuilLimite>> getAll() {
+        try {
+            List<SeuilLimite> seuilLimites = seuilLimiteService.getAllSorted();
+            return ResponseEntity.ok(seuilLimites);
+        } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
     }
